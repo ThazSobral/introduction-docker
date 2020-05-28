@@ -1,0 +1,66 @@
+// 1º
+// buildar a image com o nome MYSQL-IMAGE seguindo o arquivo Dockerfile
+// obs.1: a flag -t é o nome da imagem que será gerada
+// obs.2: a flag -f é o caminho do arquivo Dockerfile
+docker build -t mysql-image -f api/db/Dockerfile .
+
+// 2º
+// subir um container com o nome DOCKER-CONTAINER a partir da imagem DOCKER-IMAGE
+// obs.1: a flag -d garante que o terminal não fica bloqueado
+// obs.2: a flag --rm apaga a imagem se já existir
+// obs.3: a flag --name da um nome para o container
+docker run -d --rm --name mysql-container mysql-image
+
+// 3º
+// executa o SCRIPT.SQL no container MYSQL-CONTAINER. 
+// obs.1: UROOT significa USER ROOT e PROOT significa PASSWORD ROOT
+// obs.2: a flag -i significa modo interativo, garante que o processo não fecho antes de finalizar
+docker exec -i mysql-container mysql -uroot -proot < api/db/script.sql
+
+// 4º
+// acessa o terminal do container.
+// obs.1: a flag -t indica que será utilizado um terminal
+// obs.2: sendo a imagem um GNU/linux
+docker exec -it mysql-container /bin/bash
+
+// 5º
+// acessa o SGBD MYSQL
+mysql -uroot -proot
+
+// 6º
+// acessa o banco de dados
+use introduction;
+
+// 7º
+// retorna os valores da tabela
+select * from products;
+
+// 8º
+// indica para o container onde gravar seu espelho no host e sobe o container
+// obs.1: a flag -v indica o volume de espelho
+dokcer run -d -v $(pwd)/api/db/data:/var/lib/mysql --rm --name mysql-container mysql-image
+
+// 9º
+// retorna as informações de rede do cantainer
+docker inspect mysql-container
+
+// 10º
+// sobe o container indicando seu volume e expondo a porta de acesso
+// obs.1: a porta exposta no container (9001) segue a indicação da porta de acesso do host (9001)
+docker run -d -v $(pwd)/api:/home/node/app -p 9001:9001 --rm --name node-container node-image
+
+// 11º
+// sobe o container indicando seu volume, expondo a porta de acesso e linkando com outro container.
+//obs.1: o ato de linkar containers é que ele se reconhecem pelo nome entre outras vantagens
+docker run -d -v $(pwd)/api:/home/node/app -p 9001:9001 --link mysql-container --rm --name node-container node-image
+
+// 12º
+// sobe o container indicando seu volume, expondo a porta de acesso e linkando com outro container.doc
+// obs.1:no windows o comando $(pwd) não funciona, então a solução mais fácil de entender é colocar por extenso o caminho
+docker run -d -v /c/users/house/project/introduction-docker/website:/var/lib/html -p 8888:80 --link node-container --rm --name php-container php-image
+
+// 13º
+// copiar arquivos para dentro do container
+// obs.1: INDEX.PHP é o arquivo que deseja copiar
+// obs.2: o caminho se faz através do nome do container:caminho dentro do container
+docker ps index.php php-container:/var/www/html
